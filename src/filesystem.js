@@ -268,6 +268,43 @@ fileSystem.factory('fileSystem', ['$q', '$timeout', function($q, $timeout) {
 
 			return def.promise;
 		},
+		readFileByEntry: function(fileEntry, returnType) {
+	            var def = $q.defer();
+	
+	            returnType = returnType || "text";
+	
+	
+	            fileEntry.file(function(file) {
+	                var reader = new FileReader();
+	
+	                reader.onloadend = function() {
+	                    safeResolve(def, this.result);
+	                };
+	
+	                reader.onerror = function(e) {
+	                    safeReject(def, {text: "Error reading file", obj: e});
+	                };
+	
+	
+	                switch(returnType) {
+	                    case 'arraybuffer':
+	                        reader.readAsArrayBuffer(file);
+	                        break;
+	                    case 'binarystring':
+	                        reader.readAsBinaryString(file);
+	                        break;
+	                    case 'dataurl':
+	                        reader.readAsDataURL(file);
+	                        break;
+	                    default:
+	                        reader.readAsText(file);
+	                }
+	            }, function(e) {
+	                safeReject(def, {text: "Error getting file", obj: e});
+	            });
+	
+	            return def.promise;
+	        },		
 		getFileEntryFromLocalFileSystemURL: function(url) {
 			var def = $q.defer();
 			window.resolveLocalFileSystemURL(
